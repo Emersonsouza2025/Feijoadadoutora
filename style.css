@@ -61,7 +61,8 @@
 
         // --- CONFIGURAÇÃO ---
         const GOOGLE_API_KEY = "AIzaSyD0W_6D40ITw4eOw3mpSQhAH_VKDo2t2SU";
-        const RESTAURANT_LOCATION = { lat: -9.378774, lng: -40.485805 }; 
+        // Localização atualizada para Av. mar da Tasmânia, Antônio Cassimiro (Coordenada aproximada para cálculo)
+        const RESTAURANT_LOCATION = { lat: -9.366432, lng: -40.485123 }; 
         const PIX_KEY = "10992056543"; 
         const WHATSAPP_NUMBER = "5574988556421";
 
@@ -92,7 +93,7 @@
                 price: 60.00,
                 serves: "Serve até 4 pessoas",
                 description: "Quando o argumento é forte e o sabor é impecável.",
-                sides: "Todos os acompanhamentos, couve, Cláusula Especial (pimenta leve no caldo) e a sentença final (torresminho crocante).",
+                sides: "Todos os acompanhamentos + cláusula especial (pimenta leve incorporada ao caldo da feijoada) e a sentença final = torresminho crocante.",
                 icon: <Gavel className="w-8 h-8" />,
                 image: "https://i.imgur.com/lwtVCQF.jpeg",
                 featured: true 
@@ -350,7 +351,7 @@
                             <div className="flex items-center gap-3">
                                 <div className="relative group">
                                     <div className="absolute inset-0 bg-yellow-600/20 blur-xl rounded-full opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                                    <img src="https://i.imgur.com/SfipWfL.jpeg" alt="Logo" className="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-lg relative z-10 hover:scale-105 transition-transform duration-300"/>
+                                    <img src="https://i.imgur.com/SfipWfL.jpeg" alt="Logo" className="w-20 h-20 md:w-28 md:h-28 object-contain drop-shadow-lg relative z-10 hover:scale-105 transition-transform duration-300"/>
                                 </div>
                                 <div>
                                     <h1 className="text-lg md:text-xl font-bold text-yellow-500 tracking-wider leading-tight">FEIJOADA DA DOUTORA</h1>
@@ -420,9 +421,9 @@
                             <div className="flex flex-col md:flex-row items-center gap-2 text-neutral-400 text-xs md:text-sm bg-neutral-800/30 pl-4 pr-2 py-2 rounded-full border border-neutral-800">
                                 <div className="flex items-center gap-2">
                                     <MapPin size={14} className="text-yellow-600 shrink-0" />
-                                    <span className="truncate max-w-[280px] md:max-w-none">R. José da Conceição, 150 - Loteamento Recife, Petrolina - PE, 56320-800</span>
+                                    <span className="truncate max-w-[280px] md:max-w-none">Av. mar da Tasmânia, 230 - Antônio Cassimiro, Petrolina - PE</span>
                                 </div>
-                                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("R. José da Conceição, 150 - Loteamento Recife, Petrolina - PE, 56320-800")}`} target="_blank" rel="noopener noreferrer" className="bg-yellow-900/40 hover:bg-yellow-600 hover:text-black text-yellow-500 p-1.5 rounded-full transition-all ml-1 flex items-center justify-center" title="Abrir no Google Maps"><ExternalLink size={12} /></a>
+                                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Av. mar da Tasmânia, 230 - Antônio Cassimiro, Petrolina - PE")}`} target="_blank" rel="noopener noreferrer" className="bg-yellow-900/40 hover:bg-yellow-600 hover:text-black text-yellow-500 p-1.5 rounded-full transition-all ml-1 flex items-center justify-center" title="Abrir no Google Maps"><ExternalLink size={12} /></a>
                             </div>
                             <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-yellow-600/80 hover:text-yellow-500 text-xs font-bold uppercase tracking-widest border border-yellow-900/30 px-4 py-2 rounded-full hover:bg-yellow-900/20 transition-all">
                                 <Phone size={14} /> Em caso de dúvidas: (74) 98855-6421
