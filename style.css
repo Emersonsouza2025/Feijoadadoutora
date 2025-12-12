@@ -321,9 +321,10 @@
                 message += `Favorecido: Carlos Vinícius de Santana Rodrigues\n\n`;
                 message += `_Comprovante segue em anexo_ 📸`;
 
-                const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+                // URL formatada com api.whatsapp.com para garantir o texto
+                const whatsappUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
                 
-                // 1. Abre o WhatsApp imediatamente
+                // 1. Abre o WhatsApp imediatamente em nova aba
                 window.open(whatsappUrl, '_blank');
 
                 // 2. Mostra o modal de agradecimento
