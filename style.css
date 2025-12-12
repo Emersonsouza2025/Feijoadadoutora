@@ -74,7 +74,7 @@
                 description: "Feijoada completinha, ideal para resolver o processo da fome.",
                 sides: "Arroz, feijão, a melhor farofa da vida e vinagrete.",
                 icon: <ScrollText className="w-8 h-8" />,
-                image: "https://i.imgur.com/79HArhC.jpeg"
+                image: "https://i.imgur.com/lwtVCQF.jpeg"
             },
             {
                 id: 2,
@@ -84,7 +84,7 @@
                 description: "Avaliação técnica: prato aprovado por unanimidade.",
                 sides: "Arroz, feijão, a melhor farofa da vida, vinagrete, couve e a sentença final (torresminho crocante).",
                 icon: <Scale className="w-8 h-8" />,
-                image: "https://i.imgur.com/npm1lTv.jpeg"
+                image: "https://i.imgur.com/lwtVCQF.jpeg"
             },
             {
                 id: 3,
@@ -94,7 +94,7 @@
                 description: "Quando o argumento é forte e o sabor é impecável.",
                 sides: "Todos os acompanhamentos, couve, Cláusula Especial (pimenta leve no caldo) e a sentença final (torresminho crocante).",
                 icon: <Gavel className="w-8 h-8" />,
-                image: "https://i.imgur.com/6JgrMlm.png",
+                image: "https://i.imgur.com/lwtVCQF.jpeg",
                 featured: true 
             }
         ];
@@ -366,7 +366,7 @@
 
                     <main className="max-w-6xl mx-auto px-4 py-6 md:py-10 pb-32">
                         <div className="text-center mb-8 md:mb-12 space-y-3">
-                            <h2 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-yellow-600 to-yellow-400 drop-shadow-sm">O Veredito do Sabor</h2>
+                            <h2 className="text-xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-yellow-600 to-yellow-400 drop-shadow-sm">A feijoada que carrega história</h2>
                             <p className="text-neutral-400 text-sm md:text-base max-w-lg mx-auto leading-relaxed px-4">Escolha sua sentença e aprecie sem moderação.</p>
                         </div>
 
