@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feijoada da Doutora - Cardápio Digital</title>
+    
+    <!-- Bibliotecas Essenciais -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Estilos Personalizados -->
+    <style>
+        .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: #171717; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: #ca8a04; border-radius: 3px; }
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fade-in 0.3s ease-out; }
+    </style>
+</head>
+<body class="bg-neutral-900 text-neutral-100 font-sans selection:bg-yellow-600 selection:text-black">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- PACOTE DE ÍCONES (Lucide React simplificado para HTML único) ---
+        const IconBase = ({ children, size = 24, className = "", ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>{children}</svg>
+        );
+        const ShoppingBag = (p) => <IconBase {...p}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></IconBase>;
+        const Trash2 = (p) => <IconBase {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></IconBase>;
+        const MessageSquare = (p) => <IconBase {...p}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></IconBase>;
+        const Plus = (p) => <IconBase {...p}><path d="M5 12h14"/><path d="M12 5v14"/></IconBase>;
+        const Minus = (p) => <IconBase {...p}><path d="M5 12h14"/></IconBase>;
+        const Send = (p) => <IconBase {...p}><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></IconBase>;
+        const Gavel = (p) => <IconBase {...p}><path d="m14 13-7.5 7.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L11 10"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/></IconBase>;
+        const Scale = (p) => <IconBase {...p}><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></IconBase>;
+        const ScrollText = (p) => <IconBase {...p}><path d="M8 21h12a2 2 0 0 0 2-2v-2a10 10 0 0 0-10-10 10 10 0 0 0-10 10v2a2 2 0 0 0 2 2h2"/><path d="M8 21A10 10 0 0 1 18 11"/><path d="M15 21V11"/><path d="M8 21v-2"/></IconBase>;
+        const X = (p) => <IconBase {...p}><path d="M18 6 6 18"/><path d="m6 6 18 18"/></IconBase>;
+        const ChevronRight = (p) => <IconBase {...p}><path d="m9 18 6-6-6-6"/></IconBase>;
+        const MapPin = (p) => <IconBase {...p}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></IconBase>;
+        const Navigation = (p) => <IconBase {...p}><polygon points="3 11 22 2 13 21 11 13 3 11"/></IconBase>;
+        const ExternalLink = (p) => <IconBase {...p}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></IconBase>;
+        const Loader2 = (p) => <IconBase {...p}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></IconBase>;
+        const Store = (p) => <IconBase {...p}><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></IconBase>;
+        const Bike = (p) => <IconBase {...p}><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm-3 11.5V14l-3-3 4-3 2 3h2"/><path d="M5.5 14H9"/></IconBase>;
+        const AlertCircle = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></IconBase>;
+        const Users = (p) => <IconBase {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></IconBase>;
+        const Star = (p) => <IconBase {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></IconBase>;
+        const Quote = (p) => <IconBase {...p}><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/></IconBase>;
+        const User = (p) => <IconBase {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconBase>;
+        const CreditCard = (p) => <IconBase {...p}><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></IconBase>;
+        const Clock = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></IconBase>;
+        const Wallet = (p) => <IconBase {...p}><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></IconBase>;
+        const FileText = (p) => <IconBase {...p}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></IconBase>;
+        const Phone = (p) => <IconBase {...p}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></IconBase>;
+
+        // --- CONFIGURAÇÃO ---
+        const GOOGLE_API_KEY = "AIzaSyD0W_6D40ITw4eOw3mpSQhAH_VKDo2t2SU";
+        const RESTAURANT_LOCATION = { lat: -9.378774, lng: -40.485805 }; 
+        const PIX_KEY = "10992056543"; 
+        const WHATSAPP_NUMBER = "5574988556421";
+
+        const MENU_ITEMS = [
+            {
+                id: 1,
+                title: "Petição Solo",
+                price: 20.00,
+                serves: "Serve 1 pessoa",
+                description: "Feijoada completinha, ideal para resolver o processo da fome.",
+                sides: "Arroz, feijão, a melhor farofa da vida e vinagrete.",
+                icon: <ScrollText className="w-8 h-8" />,
+                image: "https://i.imgur.com/79HArhC.jpeg"
+            },
+            {
+                id: 2,
+                title: "Parecer para Duas Partes",
+                price: 40.00,
+                serves: "Serve 2 pessoas",
+                description: "Avaliação técnica: prato aprovado por unanimidade.",
+                sides: "Arroz, feijão, a melhor farofa da vida, vinagrete, couve e a sentença final (torresminho crocante).",
+                icon: <Scale className="w-8 h-8" />,
+                image: "https://i.imgur.com/npm1lTv.jpeg"
+            },
+            {
+                id: 3,
+                title: "Tese Completa - Porção Família",
+                price: 60.00,
+                serves: "Serve até 4 pessoas",
+                description: "Quando o argumento é forte e o sabor é impecável.",
+                sides: "Todos os acompanhamentos, couve, Cláusula Especial (pimenta leve no caldo) e a sentença final (torresminho crocante).",
+                icon: <Gavel className="w-8 h-8" />,
+                image: "https://i.imgur.com/6JgrMlm.png",
+                featured: true 
+            }
+        ];
+
+        const TESTIMONIALS = [
+            { id: 1, name: "Dr. Carlos Mendes", text: "A melhor feijoada de Petrolina! O torresmo é causa ganha.", rating: 5 },
+            { id: 2, name: "Ana Paula Silva", text: "Entrega super rápida e comida quentinha. Recomendo a Petição Solo!", rating: 5 },
+            { id: 3, name: "Mariana Costa", text: "A farofa é sensacional, tempero caseiro inigualável.", rating: 5 },
+            { id: 4, name: "Roberto Almeida", text: "Porção generosa e muito saborosa. Veredito: Culpada por ser deliciosa!", rating: 5 }
+        ];
+
+        const DELIVERY_ZONES = [
+            { id: 'centro', label: 'Centro e Arredores', price: 5.00 },
+            { id: 'zona_norte', label: 'Zona Norte (até 5km)', price: 8.00 },
+            { id: 'zona_sul', label: 'Zona Sul (até 5km)', price: 10.00 },
+            { id: 'zona_leste', label: 'Zona Leste (até 7km)', price: 12.00 },
+            { id: 'zona_oeste', label: 'Zona Oeste (até 7km)', price: 12.00 },
+            { id: 'distante', label: 'Regiões Distantes (> 7km)', price: 20.00 },
+        ];
+
+        // --- APLICATIVO PRINCIPAL ---
+        function App() {
+            const [cart, setCart] = useState([]);
+            const [isCartOpen, setIsCartOpen] = useState(false);
+            const [observation, setObservation] = useState('');
+            const [showObservationModal, setShowObservationModal] = useState(null);
+            
+            const [customerName, setCustomerName] = useState('');
+            const [customerCpf, setCustomerCpf] = useState('');
+            const [customerPhone, setCustomerPhone] = useState('');
+            
+            const [viewersCount, setViewersCount] = useState(2);
+            const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
+
+            const [deliveryMode, setDeliveryMode] = useState('delivery'); 
+            const [address, setAddress] = useState({
+                fullAddress: '', 
+                street: '',
+                number: '',
+                neighborhood: '',
+                complement: '',
+                city: 'Petrolina',
+                state: 'PE'
+            });
+            
+            const [googleApiLoaded, setGoogleApiLoaded] = useState(false);
+            const [distance, setDistance] = useState(null);
+            const [deliveryFee, setDeliveryFee] = useState(0);
+            const [calculating, setCalculating] = useState(false);
+            const [apiError, setApiError] = useState(false);
+            const [selectedZone, setSelectedZone] = useState(DELIVERY_ZONES[0]);
+            
+            const addressInputRef = useRef(null);
+
+            const handleCpfChange = (e) => {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 11) value = value.slice(0, 11);
+                if (value.length > 9) value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                else if (value.length > 6) value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
+                else if (value.length > 3) value = value.replace(/(\d{3})(\d{3})/, '$1.$2');
+                setCustomerCpf(value);
+            };
+
+            const handlePhoneChange = (e) => {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 11) value = value.slice(0, 11);
+                if (value.length > 10) value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                else if (value.length > 6) value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+                else if (value.length > 2) value = value.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+                setCustomerPhone(value);
+            };
+
+            useEffect(() => {
+                setViewersCount(Math.floor(Math.random() * (7 - 2 + 1)) + 2);
+                const viewerInterval = setInterval(() => setViewersCount(Math.floor(Math.random() * (7 - 2 + 1)) + 2), 15000);
+                const testimonialInterval = setInterval(() => setCurrentTestimonialIndex((prev) => (prev + 1) % TESTIMONIALS.length), 5000);
+                return () => { clearInterval(viewerInterval); clearInterval(testimonialInterval); };
+            }, []);
+
+            useEffect(() => {
+                if (!window.google) {
+                    const script = document.createElement('script');
+                    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places`;
+                    script.async = true;
+                    script.defer = true;
+                    script.onload = () => setGoogleApiLoaded(true);
+                    document.body.appendChild(script);
+                } else {
+                    setGoogleApiLoaded(true);
+                }
+            }, []);
+
+            useEffect(() => {
+                if (googleApiLoaded && deliveryMode === 'delivery' && addressInputRef.current && !apiError) {
+                    if (addressInputRef.current.classList.contains('pac-target-input')) return;
+                    
+                    try {
+                        const autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+                            componentRestrictions: { country: "br" },
+                            fields: ["address_components", "geometry", "formatted_address"],
+                        });
+
+                        autocomplete.addListener("place_changed", () => {
+                            const place = autocomplete.getPlace();
+                            if (!place.geometry) { setApiError(true); return; }
+                            
+                            let street = "", neighborhood = "", city = "", state = "", number = "";
+                            place.address_components.forEach(component => {
+                                const types = component.types;
+                                if (types.includes("route")) street = component.long_name;
+                                if (types.includes("sublocality") || types.includes("sublocality_level_1")) neighborhood = component.long_name;
+                                if (types.includes("administrative_area_level_2")) city = component.long_name;
+                                if (types.includes("administrative_area_level_1")) state = component.short_name;
+                                if (types.includes("street_number")) number = component.long_name;
+                            });
+
+                            setAddress(prev => ({ ...prev, fullAddress: place.formatted_address, street: street || place.name, neighborhood: neighborhood, city: city, state: state, number: number }));
+                            calculateDeliveryCost(place.geometry.location);
+                        });
+                    } catch (e) {
+                        console.error("Google Maps Error", e);
+                    }
+                }
+            }, [googleApiLoaded, deliveryMode, apiError, isCartOpen, cart.length]);
+
+            const calculateDeliveryCost = (destination) => {
+                setCalculating(true);
+                const service = new window.google.maps.DistanceMatrixService();
+                service.getDistanceMatrix({
+                    origins: [RESTAURANT_LOCATION],
+                    destinations: [destination],
+                    travelMode: window.google.maps.TravelMode.DRIVING,
+                }, (response, status) => {
+                    setCalculating(false);
+                    if (status === "OK" && response.rows[0].elements[0].status === "OK") {
+                        const distanceInMeters = response.rows[0].elements[0].distance.value;
+                        const distanceInKm = distanceInMeters / 1000;
+                        setDistance(distanceInKm.toFixed(1));
+                        setApiError(false);
+                        let price = 0;
+                        if (distanceInKm <= 2) price = 5.00;
+                        else if (distanceInKm <= 5) price = 8.00;
+                        else if (distanceInKm <= 8) price = 12.00;
+                        else if (distanceInKm <= 12) price = 18.00;
+                        else price = 25.00;
+                        setDeliveryFee(price);
+                    } else {
+                        setApiError(true); setDistance(null); setDeliveryFee(selectedZone.price);
+                    }
+                });
+            };
+            
+            useEffect(() => {
+                if (apiError && deliveryMode === 'delivery') setDeliveryFee(selectedZone.price);
+            }, [selectedZone, apiError, deliveryMode]);
+
+            const addToCart = (item) => {
+                setCart(prev => {
+                    const existing = prev.find(i => i.id === item.id);
+                    if (existing) return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+                    return [...prev, { ...item, quantity: 1, obs: '' }];
+                });
+                setIsCartOpen(true);
+            };
+
+            const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
+            const updateQuantity = (id, delta) => setCart(prev => prev.map(item => item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item));
+            const updateItemObs = (id, text) => setCart(prev => prev.map(item => item.id === id ? { ...item, obs: text } : item));
+            const handleAddressChange = (field, value) => setAddress(prev => ({ ...prev, [field]: value }));
+
+            const itemsTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+            const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+            const finalTotal = itemsTotal + (deliveryMode === 'delivery' ? deliveryFee : 0);
+
+            const handleCheckout = () => {
+                if (cart.length === 0) return;
+                if (!customerName.trim()) { alert("⚠️ Por favor, digite seu nome completo."); return; }
+                if (!customerPhone.trim() || customerPhone.length < 13) { alert("⚠️ Informe um telefone válido."); return; }
+                if (!customerCpf.trim() || customerCpf.length < 11) { alert("⚠️ Informe seu CPF corretamente."); return; }
+                if (deliveryMode === 'delivery') {
+                    if (!apiError && (!address.street || !address.number)) { alert("⚠️ Preencha o endereço completo."); return; }
+                    if (apiError && (!address.street || !address.neighborhood)) { alert("⚠️ Preencha a Rua e o Bairro."); return; }
+                }
+
+                const orderTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const deliveryEstimate = deliveryMode === 'delivery' ? "40 a 60 minutos" : "15 a 20 minutos (Retirada)";
+
+                let message = `*NOVO PEDIDO - Feijoada da Doutora* 👩‍⚖️\n--------------------------------\n`;
+                message += `👤 *Cliente:* ${customerName}\n📱 *Telefone:* ${customerPhone}\n📄 *CPF:* ${customerCpf}\n🕒 *Horário:* ${orderTime}\n⏳ *Previsão:* ${deliveryEstimate}\n--------------------------------\n\n*ITENS DO PROCESSO:*\n`;
+                cart.forEach(item => {
+                    message += `▪️ ${item.quantity}x ${item.title}\n   (R$ ${(item.price * item.quantity).toFixed(2)})\n${item.obs ? `   _Obs: ${item.obs}_\n` : ''}`;
+                });
+                message += `\nSubtotal: R$ ${itemsTotal.toFixed(2)}\n\n*DADOS DE ENTREGA:*\n`;
+                if (deliveryMode === 'pickup') {
+                    message += "🏃 *RETIRADA NO BALCÃO*\n";
+                } else {
+                    message += "🛵 *ENTREGA DELIVERY*\n";
+                    message += `📍 ${address.street || "Endereço não informado"}, ${address.number || "S/N"} - ${address.neighborhood || ""}\n`;
+                    if (address.complement) message += `ℹ️ Comp: ${address.complement}\n`;
+                    if (distance && !apiError) message += `📏 Distância: ${distance} km\n`;
+                    message += `💰 Taxa de Entrega: R$ ${deliveryFee.toFixed(2)}\n`;
+                }
+                if (observation) message += `\n📝 *OBSERVAÇÕES GERAIS:* ${observation}\n`;
+                message += `\n--------------------------------\n*TOTAL FINAL: R$ ${finalTotal.toFixed(2)}*\n--------------------------------\n\n*FORMA DE PAGAMENTO:*\n💠 *PIX*\nChave: ${PIX_KEY}\n(Envie o comprovante por aqui)`;
+
+                window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+            };
+
+            return (
+                <div className="min-h-screen bg-neutral-900 text-neutral-100 font-sans selection:bg-yellow-600 selection:text-black pb-10">
+                    <div className="bg-gradient-to-r from-yellow-700 to-yellow-600 text-black text-xs font-bold py-1 px-4 text-center flex justify-center items-center gap-2">
+                        <Users size={12} className="animate-pulse" />
+                        <span>{viewersCount} pessoas estão analisando o cardápio agora</span>
+                    </div>
+
+                    <header className="bg-black border-b border-yellow-700/30 sticky top-0 z-20 shadow-lg shadow-black/50">
+                        <div className="max-w-6xl mx-auto px-4 py-3 md:py-4 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="relative group">
+                                    <div className="absolute inset-0 bg-yellow-600/20 blur-xl rounded-full opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                                    <img src="https://i.imgur.com/SfipWfL.jpeg" alt="Logo" className="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-lg relative z-10 hover:scale-105 transition-transform duration-300"/>
+                                </div>
+                                <div>
+                                    <h1 className="text-lg md:text-xl font-bold text-yellow-500 tracking-wider leading-tight">FEIJOADA DA DOUTORA</h1>
+                                    <p className="text-[10px] md:text-xs text-neutral-400 font-medium tracking-widest uppercase">Carta Gastronômica</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setIsCartOpen(!isCartOpen)} className="relative p-2 md:p-3 hover:bg-neutral-800 rounded-full transition-colors group">
+                                <ShoppingBag className="text-yellow-500 w-6 h-6 md:w-7 md:h-7 group-hover:scale-105 transition-transform" />
+                                {totalItems > 0 && (<span className="absolute -top-1 -right-1 md:top-0 md:right-0 bg-red-600 text-white text-[10px] md:text-xs font-bold w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full animate-bounce shadow-sm border-2 border-black">{totalItems}</span>)}
+                            </button>
+                        </div>
+                    </header>
+
+                    <main className="max-w-6xl mx-auto px-4 py-6 md:py-10 pb-32">
+                        <div className="text-center mb-8 md:mb-12 space-y-3">
+                            <h2 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-yellow-600 to-yellow-400 drop-shadow-sm">O Veredito do Sabor</h2>
+                            <p className="text-neutral-400 text-sm md:text-base max-w-lg mx-auto leading-relaxed px-4">Escolha sua sentença e aprecie sem moderação.</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
+                            {MENU_ITEMS.map((item) => (
+                                <div key={item.id} className={`group relative bg-neutral-800/40 backdrop-blur-sm border border-yellow-900/30 rounded-2xl overflow-hidden hover:border-yellow-600/50 transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-900/10 flex flex-col ${item.featured ? 'md:col-span-2 lg:col-span-1' : ''}`}>
+                                    <div className="p-5 md:p-6 flex-1 flex flex-col">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className={`${item.image ? 'p-0 bg-transparent' : 'bg-neutral-900/80 p-3'} rounded-xl border border-yellow-800/30 text-yellow-500 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shadow-inner overflow-hidden`}>
+                                                {item.image ? (<img src={item.image} alt={item.title} className="w-20 h-20 md:w-24 md:h-24 object-contain" />) : (<ScrollText className="w-8 h-8" />)}
+                                            </div>
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-2xl md:text-3xl font-bold text-yellow-400 tracking-tight">R$ {item.price.toFixed(2)}</span>
+                                                <span className="text-[10px] text-yellow-600/80 font-bold uppercase tracking-wider">Por unidade</span>
+                                            </div>
+                                        </div>
+                                        <h3 className="text-xl md:text-2xl font-bold mb-2 text-white group-hover:text-yellow-200 transition-colors">{item.title}</h3>
+                                        <div className="mb-4"><span className="inline-flex items-center bg-yellow-900/20 text-yellow-300 text-xs font-semibold px-2.5 py-1 rounded-md border border-yellow-700/30">{item.serves}</span></div>
+                                        <p className="text-neutral-300 text-sm md:text-base mb-6 leading-relaxed">{item.description}</p>
+                                        <div className="border-t border-dashed border-neutral-700 pt-4 mt-auto">
+                                            <p className="text-xs text-neutral-500 uppercase tracking-widest font-bold mb-2 flex items-center gap-2"><ChevronRight size={12} className="text-yellow-600" /> Autos do Processo</p>
+                                            <p className="text-sm text-neutral-400 italic font-light leading-normal">{item.sides}</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => addToCart(item)} className="w-full py-4 md:py-5 bg-neutral-900 hover:bg-yellow-600 hover:text-black text-yellow-500 font-bold text-sm md:text-base tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 border-t border-yellow-900/30 active:scale-[0.98]">
+                                        <Plus size={18} /> Adicionar aos Autos
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="text-center mb-16 -mt-8"><p className="text-[10px] md:text-xs text-neutral-500 italic uppercase tracking-wider opacity-60">* Imagens meramente ilustrativas</p></div>
+
+                        <div className="max-w-3xl mx-auto mb-16">
+                            <div className="flex items-center gap-2 justify-center mb-6"><Quote size={20} className="text-yellow-500" /><h3 className="text-xl font-bold text-yellow-500 tracking-wider">TESTEMUNHAS DE DEFESA</h3><Quote size={20} className="text-yellow-500 transform scale-x-[-1]" /></div>
+                            <div className="relative h-32 bg-neutral-900/50 rounded-2xl border border-yellow-900/20 p-6 flex flex-col items-center justify-center text-center overflow-hidden">
+                                {TESTIMONIALS.map((testimonial, index) => (
+                                    <div key={testimonial.id} className={`absolute inset-0 p-6 flex flex-col items-center justify-center transition-all duration-1000 ease-in-out transform ${index === currentTestimonialIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+                                        <div className="flex gap-1 mb-2 text-yellow-500">{[...Array(testimonial.rating)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}</div>
+                                        <p className="text-neutral-200 italic mb-2 text-lg">"{testimonial.text}"</p>
+                                        <p className="text-yellow-600 text-xs font-bold uppercase tracking-widest">— {testimonial.name}</p>
+                                    </div>
+                                ))}
+                                <div className="absolute bottom-3 flex gap-2">{TESTIMONIALS.map((_, index) => (<div key={index} className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${index === currentTestimonialIndex ? 'bg-yellow-500' : 'bg-neutral-700'}`} />))}</div>
+                            </div>
+                        </div>
+                    </main>
+
+                    <footer className="bg-black border-t border-yellow-900/30 py-8 mt-auto">
+                        <div className="max-w-6xl mx-auto px-4 flex flex-col items-center gap-4 text-center">
+                            <div className="flex flex-col md:flex-row items-center gap-2 text-neutral-400 text-xs md:text-sm bg-neutral-800/30 pl-4 pr-2 py-2 rounded-full border border-neutral-800">
+                                <div className="flex items-center gap-2">
+                                    <MapPin size={14} className="text-yellow-600 shrink-0" />
+                                    <span className="truncate max-w-[280px] md:max-w-none">R. José da Conceição, 150 - Loteamento Recife, Petrolina - PE, 56320-800</span>
+                                </div>
+                                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("R. José da Conceição, 150 - Loteamento Recife, Petrolina - PE, 56320-800")}`} target="_blank" rel="noopener noreferrer" className="bg-yellow-900/40 hover:bg-yellow-600 hover:text-black text-yellow-500 p-1.5 rounded-full transition-all ml-1 flex items-center justify-center" title="Abrir no Google Maps"><ExternalLink size={12} /></a>
+                            </div>
+                            <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-yellow-600/80 hover:text-yellow-500 text-xs font-bold uppercase tracking-widest border border-yellow-900/30 px-4 py-2 rounded-full hover:bg-yellow-900/20 transition-all">
+                                <Phone size={14} /> Em caso de dúvidas: (74) 98855-6421
+                            </a>
+                            <p className="text-[10px] text-neutral-600 mt-4">© {new Date().getFullYear()} Feijoada da Doutora. Todos os direitos reservados.</p>
+                        </div>
+                    </footer>
+
+                    <div className={`fixed inset-0 z-50 bg-black/80 backdrop-blur-sm transition-opacity duration-300 ${isCartOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsCartOpen(false)}>
+                        <div className={`fixed right-0 top-0 h-full w-full md:w-[450px] md:max-w-md bg-neutral-900 shadow-2xl transform transition-transform duration-300 border-l border-yellow-900/30 flex flex-col ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`} onClick={e => e.stopPropagation()}>
+                            <div className="p-5 border-b border-neutral-800 flex justify-between items-center bg-black/50 backdrop-blur-md">
+                                <h3 className="text-lg md:text-xl font-bold text-yellow-500 flex items-center gap-2"><ShoppingBag className="w-5 h-5 md:w-6 md:h-6" /> Resumo do Processo</h3>
+                                <button onClick={() => setIsCartOpen(false)} className="text-neutral-400 hover:text-white p-2 hover:bg-neutral-800 rounded-full transition-colors"><X size={24} /></button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-neutral-900 scrollbar-thin scrollbar-thumb-yellow-900 scrollbar-track-neutral-900">
+                                {cart.length === 0 ? (
+                                    <div className="h-full flex flex-col items-center justify-center text-center p-8 text-neutral-500 space-y-4">
+                                        <div className="bg-neutral-800/50 p-6 rounded-full"><ScrollText size={48} className="opacity-20" /></div>
+                                        <div><p className="text-lg font-medium text-neutral-300">Nenhum processo aberto</p><p className="text-sm">Adicione itens ao carrinho para começar.</p></div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="bg-neutral-800/30 p-4 rounded-xl border border-neutral-800 space-y-3 mb-4">
+                                            <h4 className="text-xs text-yellow-600 uppercase tracking-widest font-bold flex items-center gap-2"><User size={14} /> Seus Dados</h4>
+                                            <input type="text" placeholder="Digite seu nome completo..." value={customerName} onChange={(e) => setCustomerName(e.target.value)} className="w-full bg-black/40 border border-neutral-700 rounded-lg p-3 text-sm text-white focus:border-yellow-600 outline-none placeholder:text-neutral-600" />
+                                            <input type="text" placeholder="Telefone (Obrigatório)" value={customerPhone} onChange={handlePhoneChange} className="w-full bg-black/40 border border-neutral-700 rounded-lg p-3 text-sm text-white focus:border-yellow-600 outline-none placeholder:text-neutral-600" />
+                                            <input type="text" placeholder="CPF (Obrigatório)" value={customerCpf} onChange={handleCpfChange} className="w-full bg-black/40 border border-neutral-700 rounded-lg p-3 text-sm text-white focus:border-yellow-600 outline-none placeholder:text-neutral-600" />
+                                        </div>
+                                        <div className="space-y-3">
+                                            <h4 className="text-xs text-yellow-600 uppercase tracking-widest font-bold mb-2">Itens do Pedido</h4>
+                                            {cart.map((item) => (
+                                                <div key={item.id} className="bg-neutral-800/40 rounded-xl p-4 border border-neutral-700/50 hover:border-yellow-900/50 transition-colors">
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <h4 className="font-bold text-neutral-200 text-sm md:text-base pr-4 leading-tight">{item.title}</h4>
+                                                        <span className="font-bold text-yellow-500 whitespace-nowrap">R$ {(item.price * item.quantity).toFixed(2)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center mt-2">
+                                                        <div className="flex items-center gap-1 bg-neutral-950 rounded-lg p-1 border border-neutral-800">
+                                                            <button onClick={() => updateQuantity(item.id, -1)} className="w-8 h-8 flex items-center justify-center hover:bg-neutral-800 rounded-md text-neutral-400 hover:text-white transition-colors active:scale-95"><Minus size={14} /></button>
+                                                            <span className="text-sm font-bold w-6 text-center text-white">{item.quantity}</span>
+                                                            <button onClick={() => updateQuantity(item.id, 1)} className="w-8 h-8 flex items-center justify-center hover:bg-neutral-800 rounded-md text-neutral-400 hover:text-white transition-colors active:scale-95"><Plus size={14} /></button>
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <button onClick={() => setShowObservationModal(item.id === showObservationModal ? null : item.id)} className={`p-2 rounded-lg transition-colors flex items-center gap-2 text-xs font-medium ${item.obs ? 'bg-yellow-900/20 text-yellow-500 border border-yellow-900/50' : 'bg-neutral-900 text-neutral-400 hover:text-yellow-500 border border-transparent'}`}><MessageSquare size={16} /><span className="hidden md:inline">{item.obs ? 'Editar Obs' : 'Obs'}</span></button>
+                                                            <button onClick={() => removeFromCart(item.id)} className="p-2 bg-neutral-900 text-neutral-400 hover:text-red-500 hover:bg-red-900/10 rounded-lg transition-colors border border-transparent hover:border-red-900/30"><Trash2 size={16} /></button>
+                                                        </div>
+                                                    </div>
+                                                    {(showObservationModal === item.id || item.obs) && (<div className="mt-4 pt-3 border-t border-neutral-700/30"><label className="text-[10px] uppercase tracking-wider text-yellow-600 mb-1.5 block font-bold">Observações do item:</label><textarea value={item.obs} onChange={(e) => updateItemObs(item.id, e.target.value)} placeholder="Ex: Sem cebola, farofa separada..." className="w-full bg-black/30 border border-neutral-700 rounded-lg p-2.5 text-sm text-neutral-300 focus:outline-none focus:border-yellow-600 transition-all h-20 resize-none" /></div>)}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="pt-4 border-t border-dashed border-neutral-800 space-y-4">
+                                            <h4 className="text-xs text-yellow-600 uppercase tracking-widest font-bold flex items-center gap-2"><MapPin size={14} /> Dados de Entrega</h4>
+                                            <div className="flex p-1 bg-neutral-800 rounded-xl border border-neutral-700">
+                                                <button onClick={() => setDeliveryMode('delivery')} className={`flex-1 py-2 px-3 rounded-lg flex items-center justify-center gap-2 text-sm font-bold transition-all ${deliveryMode === 'delivery' ? 'bg-yellow-600 text-black shadow-lg' : 'text-neutral-400 hover:text-white'}`}><Bike size={16} /> Entrega</button>
+                                                <button onClick={() => { setDeliveryMode('pickup'); setDeliveryFee(0); }} className={`flex-1 py-2 px-3 rounded-lg flex items-center justify-center gap-2 text-sm font-bold transition-all ${deliveryMode === 'pickup' ? 'bg-yellow-600 text-black shadow-lg' : 'text-neutral-400 hover:text-white'}`}><Store size={16} /> Retirada</button>
+                                            </div>
+                                            {deliveryMode === 'delivery' && (
+                                                <div className="space-y-3 bg-neutral-800/30 p-4 rounded-xl border border-neutral-800 animate-fade-in relative overflow-hidden">
+                                                    {calculating && (<div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl"><div className="flex flex-col items-center gap-2 text-yellow-500 font-bold animate-pulse"><Loader2 size={32} className="animate-spin" /><span className="text-xs uppercase tracking-wider">Calculando rota...</span></div></div>)}
+                                                    {apiError ? (
+                                                        <div className="animate-fade-in space-y-3">
+                                                            <div className="flex items-start gap-2 p-2 bg-yellow-900/20 border border-yellow-600/30 rounded text-xs text-yellow-500 mb-2"><AlertCircle size={16} className="shrink-0 mt-0.5" /><span>Não conseguimos calcular o frete exato automaticamente. Selecione sua região abaixo:</span></div>
+                                                            <select value={selectedZone.id} onChange={(e) => setSelectedZone(DELIVERY_ZONES.find(opt => opt.id === e.target.value))} className="w-full bg-black/40 border border-neutral-700 rounded-lg p-3 text-sm text-yellow-500 font-bold focus:outline-none focus:border-yellow-600 transition-colors">{DELIVERY_ZONES.map(opt => (<option key={opt.id} value={opt.id}>{opt.label} - R$ {opt.price.toFixed(2)}</option>))}</select>
+                                                            <div><input type="text" placeholder="Digite Rua e Número" value={address.street} onChange={(e) => handleAddressChange('street', e.target.value)} className="w-full bg-black/40 border border-neutral-700 rounded-lg p-3 text-sm text-white focus:border-yellow-600 outline-none mb-3" /><input type="text" placeholder="Digite o Bairro" value={address.neighborhood} onChange={(e) => handleAddressChange('neighborhood', e.target.value)} className="w-full bg-black/40 border border-neutral-700 rounded-lg p-3 text-sm text-white focus:border-yellow-600 outline-none" /></div>
+                                                        </div>
+                                                    ) : (
+                                                        <div>
+                                                            <label className="text-[10px] uppercase text-neutral-500 font-bold mb-1 block">Busque seu endereço</label>
+                                                            <input ref={addressInputRef} type="text" placeholder="Digite rua e número..." defaultValue={address.street} className="w-full bg-black/40 border border-neutral-700 rounded-lg p-3 text-sm text-white focus:border-yellow-600 outline-none mb-3 shadow-inner placeholder:text-neutral-600" />
+                                                            {address.fullAddress && (<div className="mb-3 p-2 bg-yellow-900/10 border border-yellow-900/30 rounded text-xs text-yellow-500/80">{address.fullAddress}</div>)}
+                                                            <div className="flex gap-3 mb-3">
+                                                                <div className="w-1/3"><input type="text" placeholder="Nº" value={address.number} onChange={(e) => handleAddressChange('number', e.target.value)} className="w-full bg-black/40 border border-neutral-700 rounded-lg p-3 text-sm text-white focus:border-yellow-600 outline-none" /></div>
+                                                                <div className="w-2/3"><input type="text" placeholder="Bairro" value={address.neighborhood} onChange={(e) => handleAddressChange('neighborhood', e.target.value)} className="w-full bg-black/40 border border-neutral-700 rounded-lg p-3 text-sm text-white focus:border-yellow-600 outline-none" /></div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    <input type="text" placeholder="Complemento (Apto, Bloco, Ponto de ref)" value={address.complement} onChange={(e) => handleAddressChange('complement', e.target.value)} className="w-full bg-black/40 border border-neutral-700 rounded-lg p-3 text-sm text-white focus:border-yellow-600 outline-none" />
+                                                    {!apiError && (<button onClick={() => setApiError(true)} className="text-[10px] text-neutral-500 underline mt-2 hover:text-yellow-500 cursor-pointer w-full text-center">Problemas com o endereço? Selecionar região manualmente</button>)}
+                                                    {distance && !apiError && (<div className="flex items-center justify-between pt-2 border-t border-neutral-700/50 text-xs"><span className="text-neutral-400">Distância estimada:</span><span className="text-white font-mono">{distance} km</span></div>)}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="pt-4 border-t border-dashed border-neutral-800 space-y-4">
+                                            <h4 className="text-xs text-yellow-600 uppercase tracking-widest font-bold flex items-center gap-2"><CreditCard size={14} /> Pagamento (Somente PIX)</h4>
+                                            <div className="bg-neutral-800/50 p-3 rounded-lg border border-yellow-900/30 text-center animate-fade-in">
+                                                <p className="text-xs text-neutral-400 mb-1">Chave PIX:</p>
+                                                <p className="text-yellow-500 font-mono font-bold text-lg select-all mb-1">{PIX_KEY}</p>
+                                                <p className="text-xs text-neutral-300 font-medium mb-3">Carlos Vinícius de Santana Rodrigues</p>
+                                                <div className="bg-yellow-900/20 p-2 rounded border border-yellow-600/30 flex items-start gap-2 text-left">
+                                                    <AlertCircle size={14} className="text-yellow-500 shrink-0 mt-0.5" />
+                                                    <p className="text-[10px] text-yellow-200 leading-tight"><strong>Atenção:</strong> O pagamento só será confirmado após o envio do comprovante para o nosso WhatsApp <span className="font-bold underline">(74) 98855-6421</span>.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="pt-4 border-t border-dashed border-neutral-800">
+                                            <div className="flex items-center justify-between mb-2"><h4 className="text-xs text-yellow-600 uppercase tracking-widest font-bold">Observações Gerais</h4>{observation.length > 0 && <span className="text-[10px] text-green-500">Salvo</span>}</div>
+                                            <textarea value={observation} onChange={(e) => setObservation(e.target.value)} placeholder="Ex: Campainha não funciona, deixar na portaria..." className="w-full bg-neutral-800/30 border border-neutral-800 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-yellow-600 transition-colors h-20 resize-none" />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                            <div className="bg-neutral-950 p-5 md:p-6 border-t border-yellow-900/30 shadow-[0_-5px_20px_rgba(0,0,0,0.5)] z-10 flex flex-col gap-3">
+                                <div className="flex justify-between items-end">
+                                    <div className="text-sm text-neutral-400 space-y-1">
+                                        <div>Itens: <span className="text-neutral-200">R$ {itemsTotal.toFixed(2)}</span></div>
+                                        <div className="flex items-center gap-1">Entrega: <span className={deliveryFee === 0 ? 'text-green-500 font-bold' : 'text-neutral-200'}>{deliveryFee === 0 ? 'Grátis' : `R$ ${deliveryFee.toFixed(2)}`}</span></div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Total Final</div>
+                                        <div className="text-3xl font-bold text-yellow-500">R$ {finalTotal.toFixed(2)}</div>
+                                    </div>
+                                </div>
+                                <button onClick={() => setIsCartOpen(false)} className="w-full font-bold py-3 rounded-xl flex items-center justify-center gap-2 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-900/20 transition-all active:scale-[0.98]">
+                                    <Plus size={18} /> ADICIONAR MAIS ITENS
+                                </button>
+                                <button onClick={handleCheckout} disabled={cart.length === 0} className={`w-full font-extrabold py-4 rounded-xl flex items-center justify-center gap-3 transition-all transform ${cart.length === 0 ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed' : 'bg-gradient-to-r from-yellow-700 to-yellow-600 hover:from-yellow-600 hover:to-yellow-500 text-black active:scale-[0.98] shadow-lg shadow-yellow-900/20'}`}>
+                                    <Send size={20} /> ENVIAR PEDIDO
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
