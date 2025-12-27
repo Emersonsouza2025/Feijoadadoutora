@@ -61,7 +61,6 @@
 
         // --- CONFIGURAÇÃO ---
         const GOOGLE_API_KEY = "AIzaSyD0W_6D40ITw4eOw3mpSQhAH_VKDo2t2SU";
-        // Localização atualizada para Av. mar da Tasmânia, Antônio Cassimiro (Coordenada aproximada para cálculo)
         const RESTAURANT_LOCATION = { lat: -9.366432, lng: -40.485123 }; 
         const PIX_KEY = "10992056543"; 
         const WHATSAPP_NUMBER = "5574988556421";
@@ -107,9 +106,10 @@
             { id: 4, name: "Roberto Almeida", text: "Porção generosa e muito saborosa. Veredito: Culpada por ser deliciosa!", rating: 5 }
         ];
 
+        // ZONAS MANUAIS ATUALIZADAS (Para refletir o preço mínimo novo)
         const DELIVERY_ZONES = [
-            { id: 'centro', label: 'Centro e Arredores', price: 5.00 },
-            { id: 'zona_norte', label: 'Zona Norte (até 5km)', price: 8.00 },
+            { id: 'centro', label: 'Centro e Arredores (aprox 1km)', price: 6.00 },
+            { id: 'zona_norte', label: 'Zona Norte (até 5km)', price: 10.00 },
             { id: 'zona_sul', label: 'Zona Sul (até 5km)', price: 10.00 },
             { id: 'zona_leste', label: 'Zona Leste (até 7km)', price: 12.00 },
             { id: 'zona_oeste', label: 'Zona Oeste (até 7km)', price: 12.00 },
@@ -237,12 +237,17 @@
                         const distanceInKm = distanceInMeters / 1000;
                         setDistance(distanceInKm.toFixed(1));
                         setApiError(false);
+                        
+                        // LÓGICA DE PREÇO ATUALIZADA
                         let price = 0;
-                        if (distanceInKm <= 2) price = 5.00;
-                        else if (distanceInKm <= 5) price = 8.00;
-                        else if (distanceInKm <= 8) price = 12.00;
-                        else if (distanceInKm <= 12) price = 18.00;
-                        else price = 25.00;
+                        if (distanceInKm <= 1) price = 6.00;
+                        else if (distanceInKm <= 9) price = 6.00 + Math.ceil(distanceInKm - 1);
+                        else if (distanceInKm < 10) price = 15.00;
+                        else if (distanceInKm <= 10) price = 16.00;
+                        else if (distanceInKm <= 13) price = 16.00 + (Math.ceil(distanceInKm) - 10); 
+                        else if (distanceInKm <= 26) price = 22.50 + ((Math.ceil(distanceInKm) - 14) * 1.50); 
+                        else price = 45.00; // Fallback distance
+
                         setDeliveryFee(price);
                     } else {
                         setApiError(true); setDistance(null); setDeliveryFee(selectedZone.price);
@@ -341,14 +346,9 @@
 
             return (
                 <div className="min-h-screen bg-neutral-900 text-neutral-100 font-sans selection:bg-yellow-600 selection:text-black pb-10">
-                    
                     <div className="bg-gradient-to-r from-yellow-700 to-yellow-600 text-black text-xs font-bold py-1 px-4 text-center flex justify-center items-center gap-2">
                         <Users size={12} className="animate-pulse" />
                         <span>{viewersCount} pessoas estão analisando o cardápio agora</span>
-                    </div>
-
-                    <div className="bg-red-900/80 text-white text-xs md:text-sm font-bold py-2 px-4 text-center animate-pulse border-b border-red-700">
-                        🕒 Atendemos aos sábados de 11h as 15:30
                     </div>
 
                     <header className="bg-black border-b border-yellow-700/30 sticky top-0 z-20 shadow-lg shadow-black/50">
@@ -361,6 +361,7 @@
                                 <div>
                                     <h1 className="text-lg md:text-xl font-bold text-yellow-500 tracking-wider leading-tight">FEIJOADA DA DOUTORA</h1>
                                     <p className="text-[10px] md:text-xs text-neutral-400 font-medium tracking-widest uppercase">Carta Gastronômica</p>
+                                    <p className="text-[10px] text-yellow-600/80 font-bold tracking-wide animate-pulse mt-0.5">Sábado e domingo - 11h às 15:30</p>
                                 </div>
                             </div>
                             <button onClick={() => setIsCartOpen(!isCartOpen)} className="relative p-2 md:p-3 hover:bg-neutral-800 rounded-full transition-colors group">
@@ -507,7 +508,6 @@
                                                         </div>
                                                     )}
                                                     <input type="text" placeholder="Complemento (Apto, Bloco, Ponto de ref)" value={address.complement} onChange={(e) => handleAddressChange('complement', e.target.value)} className="w-full bg-black/40 border border-neutral-700 rounded-lg p-3 text-sm text-white focus:border-yellow-600 outline-none" />
-                                                    {!apiError && (<button onClick={() => setApiError(true)} className="text-[10px] text-neutral-500 underline mt-2 hover:text-yellow-500 cursor-pointer w-full text-center">Problemas com o endereço? Selecionar região manualmente</button>)}
                                                     {distance && !apiError && (<div className="flex items-center justify-between pt-2 border-t border-neutral-700/50 text-xs"><span className="text-neutral-400">Distância estimada:</span><span className="text-white font-mono">{distance} km</span></div>)}
                                                 </div>
                                             )}
