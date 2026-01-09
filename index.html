@@ -106,9 +106,10 @@
             { id: 4, name: "Roberto Almeida", text: "Porção generosa e muito saborosa. Veredito: Culpada por ser deliciosa!", rating: 5 }
         ];
 
-        // ZONAS MANUAIS ATUALIZADAS (Para refletir o preço mínimo novo)
+        // ZONAS MANUAIS ATUALIZADAS (Com Loteamento Recife)
         const DELIVERY_ZONES = [
             { id: 'centro', label: 'Centro e Arredores (aprox 1km)', price: 6.00 },
+            { id: 'loteamento_recife', label: 'Loteamento Recife', price: 10.00 }, // Nova opção fixa
             { id: 'zona_norte', label: 'Zona Norte (até 5km)', price: 10.00 },
             { id: 'zona_sul', label: 'Zona Sul (até 5km)', price: 10.00 },
             { id: 'zona_leste', label: 'Zona Leste (até 7km)', price: 12.00 },
@@ -215,7 +216,8 @@
                             });
 
                             setAddress(prev => ({ ...prev, fullAddress: place.formatted_address, street: street || place.name, neighborhood: neighborhood, city: city, state: state, number: number }));
-                            calculateDeliveryCost(place.geometry.location);
+                            // Passa o bairro para a função de cálculo
+                            calculateDeliveryCost(place.geometry.location, neighborhood);
                         });
                     } catch (e) {
                         console.error("Google Maps Error", e);
@@ -223,7 +225,7 @@
                 }
             }, [googleApiLoaded, deliveryMode, apiError, isCartOpen, cart.length]);
 
-            const calculateDeliveryCost = (destination) => {
+            const calculateDeliveryCost = (destination, neighborhoodName = "") => {
                 setCalculating(true);
                 const service = new window.google.maps.DistanceMatrixService();
                 service.getDistanceMatrix({
@@ -237,18 +239,27 @@
                         const distanceInKm = distanceInMeters / 1000;
                         setDistance(distanceInKm.toFixed(1));
                         setApiError(false);
-                        
-                        // LÓGICA DE PREÇO ATUALIZADA
-                        let price = 0;
-                        if (distanceInKm <= 1) price = 6.00;
-                        else if (distanceInKm <= 9) price = 6.00 + Math.ceil(distanceInKm - 1);
-                        else if (distanceInKm < 10) price = 15.00;
-                        else if (distanceInKm <= 10) price = 16.00;
-                        else if (distanceInKm <= 13) price = 16.00 + (Math.ceil(distanceInKm) - 10); 
-                        else if (distanceInKm <= 26) price = 22.50 + ((Math.ceil(distanceInKm) - 14) * 1.50); 
-                        else price = 45.00; // Fallback distance
 
-                        setDeliveryFee(price);
+                        // VERIFICAÇÃO DE BAIRRO ESPECÍFICO (LOTEAMENTO RECIFE)
+                        // Normaliza a string para remover acentos e caixa alta
+                        const normHood = neighborhoodName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        
+                        if (normHood.includes("recife")) {
+                            // Se for Loteamento Recife, taxa fixa de R$ 10,00
+                            setDeliveryFee(10.00);
+                        } else {
+                            // Lógica de Preço Padrão por Distância
+                            let price = 0;
+                            if (distanceInKm <= 1) price = 6.00;
+                            else if (distanceInKm <= 9) price = 6.00 + Math.ceil(distanceInKm - 1);
+                            else if (distanceInKm < 10) price = 15.00;
+                            else if (distanceInKm <= 10) price = 16.00;
+                            else if (distanceInKm <= 13) price = 16.00 + (Math.ceil(distanceInKm) - 10); 
+                            else if (distanceInKm <= 26) price = 22.50 + ((Math.ceil(distanceInKm) - 14) * 1.50); 
+                            else price = 45.00; // Fallback distance
+                            
+                            setDeliveryFee(price);
+                        }
                     } else {
                         setApiError(true); setDistance(null); setDeliveryFee(selectedZone.price);
                     }
@@ -508,6 +519,7 @@
                                                         </div>
                                                     )}
                                                     <input type="text" placeholder="Complemento (Apto, Bloco, Ponto de ref)" value={address.complement} onChange={(e) => handleAddressChange('complement', e.target.value)} className="w-full bg-black/40 border border-neutral-700 rounded-lg p-3 text-sm text-white focus:border-yellow-600 outline-none" />
+                                                    {!apiError && (<button onClick={() => setApiError(true)} className="text-[10px] text-neutral-500 underline mt-2 hover:text-yellow-500 cursor-pointer w-full text-center">Problemas com o endereço? Selecionar região manualmente</button>)}
                                                     {distance && !apiError && (<div className="flex items-center justify-between pt-2 border-t border-neutral-700/50 text-xs"><span className="text-neutral-400">Distância estimada:</span><span className="text-white font-mono">{distance} km</span></div>)}
                                                 </div>
                                             )}
@@ -520,7 +532,7 @@
                                                 <p className="text-xs text-neutral-300 font-medium mb-3">Carlos Vinícius de Santana Rodrigues</p>
                                                 <div className="bg-yellow-900/20 p-2 rounded border border-yellow-600/30 flex items-start gap-2 text-left">
                                                     <AlertCircle size={14} className="text-yellow-500 shrink-0 mt-0.5" />
-                                                    <p className="text-[10px] text-yellow-200 leading-tight"><strong>Atenção:</strong> O pagamento só será confirmado após o envio do comprovante para o nosso WhatsApp <span className="font-bold underline">(74) 98855-6421</span>.</p>
+                                                    <p className="text-[10px] text-yellow-200 leading-tight"><strong>Atenção:</strong> O pagamento só será confirmado após o envio do comprovante para o nosso WhatsApp <span className="font-bold underline">(87) 98832-1706</span>.</p>
                                                 </div>
                                             </div>
                                         </div>
