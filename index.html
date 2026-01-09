@@ -106,7 +106,17 @@
             { id: 4, name: "Roberto Almeida", text: "Porção generosa e muito saborosa. Veredito: Culpada por ser deliciosa!", rating: 5 }
         ];
 
-    
+        // ZONAS MANUAIS ATUALIZADAS (Com Loteamento Recife)
+        const DELIVERY_ZONES = [
+            { id: 'centro', label: 'Centro e Arredores (aprox 1km)', price: 6.00 },
+            { id: 'loteamento_recife', label: 'Loteamento Recife', price: 10.00 }, // Nova opção fixa
+            { id: 'zona_norte', label: 'Zona Norte (até 5km)', price: 10.00 },
+            { id: 'zona_sul', label: 'Zona Sul (até 5km)', price: 10.00 },
+            { id: 'zona_leste', label: 'Zona Leste (até 7km)', price: 12.00 },
+            { id: 'zona_oeste', label: 'Zona Oeste (até 7km)', price: 12.00 },
+            { id: 'distante', label: 'Regiões Distantes (> 7km)', price: 20.00 },
+        ];
+
         // --- APLICATIVO PRINCIPAL ---
         function App() {
             const [cart, setCart] = useState([]);
@@ -433,7 +443,7 @@
                                 <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Av. mar da Tasmânia, 230 - Antônio Cassimiro, Petrolina - PE")}`} target="_blank" rel="noopener noreferrer" className="bg-yellow-900/40 hover:bg-yellow-600 hover:text-black text-yellow-500 p-1.5 rounded-full transition-all ml-1 flex items-center justify-center" title="Abrir no Google Maps"><ExternalLink size={12} /></a>
                             </div>
                             <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-yellow-600/80 hover:text-yellow-500 text-xs font-bold uppercase tracking-widest border border-yellow-900/30 px-4 py-2 rounded-full hover:bg-yellow-900/20 transition-all">
-                                <Phone size={14} /> Em caso de dúvidas: (87) 988321706
+                                <Phone size={14} /> Em caso de dúvidas: (87) 98832-1706
                             </a>
                             <p className="text-[10px] text-neutral-600 mt-4">© {new Date().getFullYear()} Feijoada da Doutora. Todos os direitos reservados.</p>
                         </div>
@@ -509,7 +519,6 @@
                                                         </div>
                                                     )}
                                                     <input type="text" placeholder="Complemento (Apto, Bloco, Ponto de ref)" value={address.complement} onChange={(e) => handleAddressChange('complement', e.target.value)} className="w-full bg-black/40 border border-neutral-700 rounded-lg p-3 text-sm text-white focus:border-yellow-600 outline-none" />
-                                                    {!apiError && (<button onClick={() => setApiError(true)} className="text-[10px] text-neutral-500 underline mt-2 hover:text-yellow-500 cursor-pointer w-full text-center">Problemas com o endereço? Selecionar região manualmente</button>)}
                                                     {distance && !apiError && (<div className="flex items-center justify-between pt-2 border-t border-neutral-700/50 text-xs"><span className="text-neutral-400">Distância estimada:</span><span className="text-white font-mono">{distance} km</span></div>)}
                                                 </div>
                                             )}
